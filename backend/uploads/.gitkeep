@@ -1,0 +1,2 @@
+# This file keeps the uploads/ directory tracked in git while ignoring its contents.
+# Uploaded images are stored here at runtime and are NOT committed to the repo.

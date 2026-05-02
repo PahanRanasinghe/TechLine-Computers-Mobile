@@ -1,0 +1,33 @@
+# ── Secrets & environment ─────────────────────────────────────────────────────
+.env
+*.env.local
+*.env.production
+
+# ── Dependencies ──────────────────────────────────────────────────────────────
+node_modules/
+.expo/
+
+# ── Logs ──────────────────────────────────────────────────────────────────────
+*.log
+npm-debug.log*
+
+# ── Build output ──────────────────────────────────────────────────────────────
+dist/
+build/
+android/
+ios/
+
+# ── Uploaded files (server-side, not needed in git) ──────────────────────────
+backend/uploads/*
+!backend/uploads/.gitkeep
+
+# ── Exclude web app source & local-only docs ──────────────────────────────────
+TechLineComputersWebApp/
+DEPLOYMENT_GUIDE.md
+QUICK_DEPLOYMENT_CHECKLIST.md
+
+# ── OS & editor files ─────────────────────────────────────────────────────────
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
