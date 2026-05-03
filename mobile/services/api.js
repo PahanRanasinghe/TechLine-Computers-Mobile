@@ -6,7 +6,7 @@ import Constants from 'expo-constants';
 
 // In production (EAS build) → always use hosted Render backend
 // In Expo Go (dev)          → auto-detect local machine IP
-const RENDER_URL = 'https://techline-backend.onrender.com'; // ← update after Render deploy
+const RENDER_URL = 'https://techline-backend-dy9j.onrender.com'
 
 let BASE_URL = RENDER_URL;
 
