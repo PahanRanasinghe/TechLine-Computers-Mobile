@@ -13,6 +13,7 @@ import {
   Animated,
   Keyboard,
 } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import api from '../services/api';
 
 // ─── Colors ───────────────────────────────────────────────────────────────────
@@ -36,6 +37,7 @@ const C = {
  * Works without authentication — calls POST /api/chatbot.
  */
 export default function TechBotChat() {
+  const insets = useSafeAreaInsets();
   const [open, setOpen] = useState(false);
   const [messages, setMessages] = useState([
     {
@@ -125,7 +127,8 @@ export default function TechBotChat() {
       <Modal visible={open} animationType="slide" transparent onRequestClose={() => setOpen(false)}>
         <KeyboardAvoidingView
           style={{ flex: 1 }}
-          behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+          behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+          keyboardVerticalOffset={Platform.OS === 'android' ? 0 : 0}
         >
           <View style={styles.modalOverlay}>
             <View style={styles.chatCard}>
@@ -166,7 +169,7 @@ export default function TechBotChat() {
               )}
 
               {/* Input */}
-              <View style={styles.inputRow}>
+              <View style={[styles.inputRow, { paddingBottom: insets.bottom + 10 }]}>
                 <TextInput
                   style={styles.chatInput}
                   placeholder="Ask TechBot anything..."
