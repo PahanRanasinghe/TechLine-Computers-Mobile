@@ -40,6 +40,35 @@ const addSupplier = async (req, res, next) => {
   }
 };
 
+// @desc    Update a supplier
+// @route   PUT /api/suppliers/:id
+// @access  Private/Admin
+const updateSupplier = async (req, res, next) => {
+  try {
+    const { name, contactPerson, email, phone, deliveryReliabilityScore } = req.body;
+
+    const supplier = await Supplier.findByIdAndUpdate(
+      req.params.id,
+      { name, contactPerson, email, phone, deliveryReliabilityScore },
+      { new: true, runValidators: true }
+    );
+
+    if (!supplier) {
+      return res.status(404).json({
+        success: false,
+        message: 'Supplier not found',
+      });
+    }
+
+    res.status(200).json({
+      success: true,
+      data: supplier,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
 // @desc    Delete a supplier
 // @route   DELETE /api/suppliers/:id
 // @access  Private/Admin
@@ -68,5 +97,6 @@ const deleteSupplier = async (req, res, next) => {
 module.exports = {
   getSuppliers,
   addSupplier,
+  updateSupplier,
   deleteSupplier,
 };

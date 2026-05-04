@@ -41,6 +41,16 @@ export default function SuppliersScreen() {
   const [score, setScore] = useState('5');
   const [submitting, setSubmitting] = useState(false);
 
+  // Edit Modal State
+  const [editModalVisible, setEditModalVisible] = useState(false);
+  const [editingSupplier, setEditingSupplier] = useState(null);
+  const [editName, setEditName] = useState('');
+  const [editContactPerson, setEditContactPerson] = useState('');
+  const [editEmail, setEditEmail] = useState('');
+  const [editPhone, setEditPhone] = useState('');
+  const [editScore, setEditScore] = useState('5');
+  const [editSubmitting, setEditSubmitting] = useState(false);
+
   const fetchSuppliers = async () => {
     try {
       const res = await api.get('/api/suppliers');
@@ -78,6 +88,40 @@ export default function SuppliersScreen() {
     );
   };
 
+  const openEditModal = (supplier) => {
+    setEditingSupplier(supplier);
+    setEditName(supplier.name);
+    setEditContactPerson(supplier.contactPerson);
+    setEditEmail(supplier.email);
+    setEditPhone(supplier.phone);
+    setEditScore(String(supplier.deliveryReliabilityScore ?? 5));
+    setEditModalVisible(true);
+  };
+
+  const handleEditSupplier = async () => {
+    if (!editName || !editContactPerson || !editEmail || !editPhone) {
+      Alert.alert('Validation Error', 'Please fill all required fields');
+      return;
+    }
+    setEditSubmitting(true);
+    try {
+      await api.put(`/api/suppliers/${editingSupplier._id}`, {
+        name: editName,
+        contactPerson: editContactPerson,
+        email: editEmail,
+        phone: editPhone,
+        deliveryReliabilityScore: Number(editScore) || 5,
+      });
+      setEditModalVisible(false);
+      setEditingSupplier(null);
+      fetchSuppliers();
+    } catch (err) {
+      Alert.alert('Error', err.response?.data?.message || 'Failed to update supplier');
+    } finally {
+      setEditSubmitting(false);
+    }
+  };
+
   const handleAddSupplier = async () => {
     if (!name || !contactPerson || !email || !phone) {
       Alert.alert('Validation Error', 'Please fill all required fields');
@@ -111,9 +155,14 @@ export default function SuppliersScreen() {
     <View style={styles.card}>
       <View style={styles.cardHeader}>
         <Text style={styles.supplierName}>{item.name}</Text>
-        <TouchableOpacity style={styles.deleteBtn} onPress={() => handleDelete(item._id, item.name)}>
-          <Text style={styles.deleteBtnText}>Delete</Text>
-        </TouchableOpacity>
+        <View style={styles.cardActions}>
+          <TouchableOpacity style={styles.editBtn} onPress={() => openEditModal(item)}>
+            <Text style={styles.editBtnText}>Edit</Text>
+          </TouchableOpacity>
+          <TouchableOpacity style={styles.deleteBtn} onPress={() => handleDelete(item._id, item.name)}>
+            <Text style={styles.deleteBtnText}>Delete</Text>
+          </TouchableOpacity>
+        </View>
       </View>
       <View style={styles.cardBody}>
         <Text style={styles.detailText}>👤 {item.contactPerson}</Text>
@@ -195,6 +244,39 @@ export default function SuppliersScreen() {
           </View>
         </View>
       </Modal>
+      {/* Edit Modal */}
+      <Modal visible={editModalVisible} animationType="slide" transparent={true}>
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalContent}>
+            <Text style={styles.modalTitle}>Edit Supplier</Text>
+            <ScrollView showsVerticalScrollIndicator={false}>
+              <Text style={styles.label}>Company Name</Text>
+              <TextInput style={styles.input} value={editName} onChangeText={setEditName} placeholder="Tech Parts Ltd" placeholderTextColor="#666" />
+
+              <Text style={styles.label}>Contact Person</Text>
+              <TextInput style={styles.input} value={editContactPerson} onChangeText={setEditContactPerson} placeholder="John Doe" placeholderTextColor="#666" />
+
+              <Text style={styles.label}>Email</Text>
+              <TextInput style={styles.input} value={editEmail} onChangeText={setEditEmail} keyboardType="email-address" placeholder="john@example.com" placeholderTextColor="#666" autoCapitalize="none" />
+
+              <Text style={styles.label}>Phone</Text>
+              <TextInput style={styles.input} value={editPhone} onChangeText={setEditPhone} keyboardType="phone-pad" placeholder="0771234567" placeholderTextColor="#666" />
+
+              <Text style={styles.label}>Reliability Score (1-5)</Text>
+              <TextInput style={styles.input} value={editScore} onChangeText={setEditScore} keyboardType="numeric" maxLength={1} placeholder="5" placeholderTextColor="#666" />
+
+              <View style={styles.modalActions}>
+                <TouchableOpacity style={styles.cancelBtn} onPress={() => setEditModalVisible(false)}>
+                  <Text style={styles.cancelBtnText}>Cancel</Text>
+                </TouchableOpacity>
+                <TouchableOpacity style={styles.submitBtn} onPress={handleEditSupplier} disabled={editSubmitting}>
+                  <Text style={styles.submitBtnText}>{editSubmitting ? 'Saving...' : 'Save Changes'}</Text>
+                </TouchableOpacity>
+              </View>
+            </ScrollView>
+          </View>
+        </View>
+      </Modal>
     </SafeAreaView>
   );
 }
@@ -228,7 +310,10 @@ const styles = StyleSheet.create({
   
   card: { backgroundColor: COLORS.card, borderRadius: 12, padding: 16, borderWidth: 1, borderColor: COLORS.border },
   cardHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 },
-  supplierName: { color: COLORS.accent, fontSize: 18, fontWeight: '800' },
+  supplierName: { color: COLORS.accent, fontSize: 18, fontWeight: '800', flex: 1, marginRight: 8 },
+  cardActions: { flexDirection: 'row', gap: 8 },
+  editBtn: { backgroundColor: '#3B82F622', paddingHorizontal: 10, paddingVertical: 4, borderRadius: 6, borderWidth: 1, borderColor: '#3B82F6' },
+  editBtnText: { color: '#3B82F6', fontSize: 12, fontWeight: '700' },
   deleteBtn: { backgroundColor: COLORS.danger + '22', paddingHorizontal: 10, paddingVertical: 4, borderRadius: 6, borderWidth: 1, borderColor: COLORS.danger },
   deleteBtnText: { color: COLORS.danger, fontSize: 12, fontWeight: '700' },
   cardBody: { gap: 6 },
