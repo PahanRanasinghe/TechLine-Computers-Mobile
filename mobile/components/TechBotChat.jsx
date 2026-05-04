@@ -126,7 +126,7 @@ export default function TechBotChat() {
       <Modal visible={open} animationType="slide" transparent onRequestClose={() => setOpen(false)}>
         <KeyboardAvoidingView
           style={{ flex: 1 }}
-          behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+          behavior="padding"
         >
           <View style={styles.modalOverlay}>
             <View style={styles.chatCard}>
