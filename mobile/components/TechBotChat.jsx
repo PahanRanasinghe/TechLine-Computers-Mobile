@@ -89,12 +89,8 @@ export default function TechBotChat() {
     }
   };
 
-  // Auto-scroll to bottom
-  useEffect(() => {
-    if (listRef.current && messages.length > 1) {
-      setTimeout(() => listRef.current?.scrollToEnd({ animated: true }), 150);
-    }
-  }, [messages]);
+  // Auto-scroll handled by onContentSizeChange on the FlatList
+  // (avoids flicker caused by setTimeout conflicting with render cycle)
 
   const renderMsg = ({ item }) => {
     const isBot = item.from === 'bot';
@@ -155,6 +151,9 @@ export default function TechBotChat() {
                 style={styles.chatMessages}
                 contentContainerStyle={{ paddingVertical: 12 }}
                 showsVerticalScrollIndicator={false}
+                onContentSizeChange={() =>
+                  listRef.current?.scrollToEnd({ animated: false })
+                }
               />
 
               {/* Typing indicator */}
