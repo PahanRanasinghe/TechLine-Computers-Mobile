@@ -1,41 +1,35 @@
 const express = require('express');
 const multer = require('multer');
-const path = require('path');
+const { CloudinaryStorage } = require('multer-storage-cloudinary');
+const cloudinary = require('cloudinary').v2;
 const { protect, adminOnly } = require('../middleware/authMiddleware');
 
 const router = express.Router();
 
-// ── Multer storage config ────────────────────────────────────────────────────
-const storage = multer.diskStorage({
-  destination(req, file, cb) {
-    cb(null, 'uploads/');
-  },
-  filename(req, file, cb) {
-    const uniqueSuffix = `${Date.now()}-${Math.round(Math.random() * 1e9)}`;
-    cb(null, `${uniqueSuffix}${path.extname(file.originalname)}`);
+// ── Configure Cloudinary ──────────────────────────────────────────────────────
+cloudinary.config({
+  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+  api_key:    process.env.CLOUDINARY_API_KEY,
+  api_secret: process.env.CLOUDINARY_API_SECRET,
+});
+
+// ── Cloudinary storage — images go straight to the cloud ─────────────────────
+const storage = new CloudinaryStorage({
+  cloudinary,
+  params: {
+    folder:         'techline-products',          // folder in your Cloudinary account
+    allowed_formats: ['jpg', 'jpeg', 'png', 'gif', 'webp'],
+    transformation: [{ width: 800, height: 800, crop: 'limit' }], // auto-resize
   },
 });
 
-// File filter — images only
-function fileFilter(req, file, cb) {
-  const allowed = /jpeg|jpg|png|gif|webp/;
-  const extOk = allowed.test(path.extname(file.originalname).toLowerCase());
-  const mimeOk = allowed.test(file.mimetype);
-
-  if (extOk && mimeOk) {
-    cb(null, true);
-  } else {
-    cb(new Error('Only image files (jpg, png, gif, webp) are allowed.'));
-  }
-}
-
+// File size limit (5 MB)
 const upload = multer({
   storage,
-  fileFilter,
-  limits: { fileSize: 5 * 1024 * 1024 }, // 5 MB max
+  limits: { fileSize: 5 * 1024 * 1024 },
 });
 
-// ── POST /api/upload  —  upload a single image ──────────────────────────────
+// ── POST /api/upload  —  upload a single product image ───────────────────────
 router.post('/', protect, adminOnly, (req, res) => {
   upload.single('image')(req, res, (err) => {
     if (err instanceof multer.MulterError) {
@@ -48,8 +42,8 @@ router.post('/', protect, adminOnly, (req, res) => {
       return res.status(400).json({ success: false, message: 'No image file provided.' });
     }
 
-    // Build the public URL for the uploaded file
-    const imageUrl = `${req.protocol}://${req.get('host')}/uploads/${req.file.filename}`;
+    // Cloudinary returns the permanent CDN URL in req.file.path
+    const imageUrl = req.file.path;
 
     res.status(201).json({
       success: true,
