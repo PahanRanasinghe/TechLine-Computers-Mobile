@@ -75,10 +75,13 @@ export default function TechBotChat() {
     setSending(true);
 
     try {
-      // Use base axios instance but without auth header for public endpoint
       const res = await api.post('/api/chatbot', { message: text });
       const reply = res.data?.reply || 'Sorry, I could not process that. Please try again.';
-      setMessages((prev) => [...prev, { id: (Date.now() + 1).toString(), from: 'bot', text: reply }]);
+      // Batch both updates together to avoid a double-render flicker
+      setMessages((prev) => [
+        ...prev,
+        { id: (Date.now() + 1).toString(), from: 'bot', text: reply },
+      ]);
     } catch {
       setMessages((prev) => [
         ...prev,
@@ -123,8 +126,7 @@ export default function TechBotChat() {
       <Modal visible={open} animationType="slide" transparent onRequestClose={() => setOpen(false)}>
         <KeyboardAvoidingView
           style={{ flex: 1 }}
-          behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-          keyboardVerticalOffset={Platform.OS === 'android' ? 0 : 0}
+          behavior={Platform.OS === 'ios' ? 'padding' : undefined}
         >
           <View style={styles.modalOverlay}>
             <View style={styles.chatCard}>
